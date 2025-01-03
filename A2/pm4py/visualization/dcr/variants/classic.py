@@ -56,24 +56,27 @@ def create_edge(source, target, relation, viz, time = None, font_size = None,tim
             viz.edge(source, target, color='#7A514D', arrowhead='normal', headlabel='x', labelfontcolor='#7A514D', labelfontsize='8', arrowtail='dot', dir='both')
         case 'milestone':
             viz.edge(source, target, color='#A932D0', arrowhead='normal', headlabel='&#9671;', labelfontcolor='#A932D0', labelfontsize='8', arrowtail='dot', dir='both')
-
-        case 'nested':
-            viz.edge(source, target, color='white', arrowhead='none', arrowtail='none', style='none')
     return
 
 
 def get_elements_in_group(dcr, target):
-    print('nested within nested found')
     for key, elements in dcr.nestedgroups.items():
         if target == key:
             return elements
     ## PRAY THIS NEVER HAPPENS
-    return None
+    return {}
         
 
 def create_nested_groups(viz, group, events, dcr):
     with viz.subgraph(name=f'cluster_{group}') as sub:
-        sub.attr(label=group, style='dashed', color='black')
+        sub.attr(style='dashed', shape='Mrecord')
+        executed_record = ''
+        if group in dcr.marking.executed:
+            executed_record = '&#x2713;'
+        pending_record = ''
+        if group in dcr.marking.pending:
+            pending_record = '!'
+        sub.attr(label=group, style='dashed', shape='Mrecord')
         sub.node(group)
         for event in events:
             if event in dcr.nestedgroups.keys():
@@ -99,6 +102,7 @@ def apply(dcr: TimedDcrGraph, parameters):
         
     for event in dcr.events:
         label = None
+
         try:
             roles = []
             key_list = list(dcr.role_assignments.keys())
@@ -107,6 +111,7 @@ def apply(dcr: TimedDcrGraph, parameters):
                 if event in value:
                     roles.append(key_list[count])
             roles = ', '.join(roles)
+        
         except AttributeError:
             roles = ''
         pending_record = ''
@@ -124,9 +129,9 @@ def apply(dcr: TimedDcrGraph, parameters):
             included_style = 'dashed'
         
         if event in dcr.nestedgroups.keys():
-            viz.node(event ,label='', shape='none', width='0.0', height='0.0')
+            viz.node(event ,label='', shape='none', width='0.0', height='0.0', fontsize='0.0')
         else:
-            viz.node(event, label, style=included_style,font_size=font_size)
+            viz.node(event, label, style=included_style, font_size=font_size)
     
 
     # ADD NESTED GROUPS
