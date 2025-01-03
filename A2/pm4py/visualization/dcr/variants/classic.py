@@ -62,6 +62,31 @@ def create_edge(source, target, relation, viz, time = None, font_size = None,tim
     return
 
 
+
+def get_elements_in_group(dcr, target):
+    print('nested within nested found')
+    for key, elements in dcr.nestedgroups.items():
+        if target == key:
+            return elements
+    ## PRAY THIS NEVER HAPPENS
+    return None
+        
+## SKAL LIGE FIXES
+def create_nested_groups(viz, group, events, dcr):
+    with viz.subgraph(name=f'cluster_{group}') as sub:
+        sub.attr(label=group, style='rounded', color='black')
+        sub.node(group)  # This represents the group node itself
+        for event in events:
+            if event in dcr.nestedgroups.keys():
+                elem = get_elements_in_group(dcr, event)
+                # Call recursively to create sub-subgraphs
+                create_nested_groups(sub, event, elem, dcr)
+            else:
+                print('adding node', event, ' to ', group)
+                sub.node(event)
+
+
+
 def apply(dcr: TimedDcrGraph, parameters):
     if parameters is None:
         parameters = {}
@@ -76,11 +101,6 @@ def apply(dcr: TimedDcrGraph, parameters):
     
         
     for event in dcr.events:
-        
-        # ## Added to wait create nested groups
-        # if event in dcr.nestedgroups.keys():
-        #     continue
-
         label = None
         try:
             roles = []
@@ -107,22 +127,15 @@ def apply(dcr: TimedDcrGraph, parameters):
             included_style = 'dashed'
         
         if event in dcr.nestedgroups.keys():
-            viz.node(event ,label='', shape='none', width='0.0', height='0.0')
+            viz.node(event ,label='', shape='none', width='1', height='0.0')
         else:
             viz.node(event, label, style=included_style,font_size=font_size)
-
-
     
-    # Handle nested groups
+
+    # ADD NESTED GROUPS
     for group, events in dcr.nestedgroups.items():
-        print('group:', group, ' events: ', events)
-        with viz.subgraph(name=f'cluster_{group}') as sub:
-            sub.attr(label=group, style='rounded', color='black')
-            sub.node(group)
-            for event in events:
-                sub.node(event)                    
+        create_nested_groups(viz, group, events, dcr)                
                 
-            
 
     for event in dcr.conditions:
         for event_prime in dcr.conditions[event]:
