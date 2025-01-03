@@ -77,9 +77,9 @@ def apply(dcr: TimedDcrGraph, parameters):
         
     for event in dcr.events:
         
-        ## Added to wait create nested groups
-        if event in dcr.nestedgroups.keys():
-            continue
+        # ## Added to wait create nested groups
+        # if event in dcr.nestedgroups.keys():
+        #     continue
 
         label = None
         try:
@@ -105,18 +105,22 @@ def apply(dcr: TimedDcrGraph, parameters):
         included_style = 'solid'
         if event not in dcr.marking.included:
             included_style = 'dashed'
-        viz.node(event, label, style=included_style,font_size=font_size)
-
+        
+        if event in dcr.nestedgroups.keys():
+            viz.node(event ,label='', shape='none', width='0.0', height='0.0')
+        else:
+            viz.node(event, label, style=included_style,font_size=font_size)
 
 
     
-      # Handle nested groups
+    # Handle nested groups
     for group, events in dcr.nestedgroups.items():
         print('group:', group, ' events: ', events)
         with viz.subgraph(name=f'cluster_{group}') as sub:
             sub.attr(label=group, style='rounded', color='black')
+            sub.node(group)
             for event in events:
-                sub.node(event)
+                sub.node(event)                    
                 
             
 
