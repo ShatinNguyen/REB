@@ -73,7 +73,7 @@ def get_elements_in_group(dcr, target):
 
 def create_nested_groups(viz, group, events, dcr):
     with viz.subgraph(name=f'cluster_{group}') as sub:
-        sub.attr(label=group, style='rounded', color='black')
+        sub.attr(label=group, style='dashed', color='black')
         sub.node(group)
         for event in events:
             if event in dcr.nestedgroups.keys():
